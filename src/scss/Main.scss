@@ -1,0 +1,133 @@
+/* Full Page */
+
+html, body {
+    height: 100%;
+    margin: 0px;
+    padding: 0px;
+}
+
+body {
+    overflow-x: hidden;
+    overflow-y: hidden;
+}
+
+#connect {
+
+    width: 275px;
+    height: 80px;
+    background-color: #dddddd;
+    border: 2px dotted #ccc;
+    
+    position: absolute;
+    top:0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+        
+    margin: auto;
+    
+    .inner {
+        width: 200px;
+        
+        .title {
+            text-align: center;
+            width: 275px;
+            font-size: 20px;
+        }
+        
+        .connection-info {
+            
+            bottom: 0;
+            position: absolute;
+            width: 100%;
+            
+            input {
+                flex-grow: 1;
+                height: 20px;
+            }
+            
+            button {
+                height: 28px;
+                margin-top: -1px;
+                width: 70px;
+            }
+            
+            p {
+                width: 100%;
+                margin: 0;
+                display: flex;
+            }
+            
+        }
+        
+        
+    }
+    
+}
+
+#maingame {
+    
+    .card {
+        display: inline-block;
+    }
+    
+    .top {
+        height: 200px;
+        border: 2px dotted #ccc;
+        img {
+            width: 133.33px;
+            height: 200px;
+        }
+    }
+
+    .hand {
+        height: 150px;
+        border: 2px dotted #ccc;
+        
+        .card {
+            cursor: pointer;
+            
+            img {
+                width: 100px;
+                height: 150px;
+            }
+        }
+    }
+
+    
+    .game-stats {
+        min-height: 50px;
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        border: 2px dotted #ccc;
+        
+        .user-list {
+            height: 150px;
+            width: 100%;
+        }
+        
+    }
+    
+    .game-stats.yourturn {
+        background: red;
+    }
+    
+}
+
+#chatwindow {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    border: 2px dotted #ccc;
+    
+    .output {
+        padding: 5px;
+        margin: 0px;
+        
+        height: 250px;
+        width: 800px;
+        background-color:#dddddd;
+        overflow-y: auto;
+    }
+}
