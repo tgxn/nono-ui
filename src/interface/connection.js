@@ -1,14 +1,4 @@
 
-
-
-// startup connection
-// let websocket, output, input;
-// window.addEventListener("load", function () {
-//     output = document.getElementById("output");
-//     input = document.getElementById("input");
-//     websocket = connectWebSocket();
-// });
-
 class Connection {
 
     constructor() {
@@ -240,7 +230,7 @@ class Connection {
             params: params
         };
     }
-    // console.log(parseMessage(":gamerx!gamerx@DE34F4CF.52CB28B2.9704630F.IP PRIVMSG #control :STATUS"));
+
 }
 
 const connectionInstance = new Connection();
