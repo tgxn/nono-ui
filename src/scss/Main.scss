@@ -72,40 +72,119 @@ body {
     }
     
     .top {
-        height: 200px;
-        border: 2px dotted #ccc;
-        img {
-            width: 133.33px;
-            height: 200px;
+        display: inline-block;
+        padding: 10px;
+        position: absolute;
+        left: 30px;
+        text-align: center;
+        font-size: 25px;
+        
+        .card-container {
+            border: 2px dotted #ccc;
+            min-height: 454px;
+            width: 304px;
+            padding: 4px;
+            margin-top:3px;
+            
+            img {
+                max-width: 300px;
+            }
+            
         }
+        
     }
 
     .hand {
-        height: 150px;
-        border: 2px dotted #ccc;
+        display: inline-block;
+        padding: 10px;
+        position: absolute;
+        left: 400px;
+        text-align: center;
+        font-size: 25px;
         
-        .card {
-            cursor: pointer;
+        .card-container {
+            border: 2px dotted #ccc;
+            height: 454px;
+            min-width: 304px;
+            padding: 4px;
+            margin-top:3px;
             
-            img {
-                width: 100px;
-                height: 150px;
+            .overlay.on {
+                display: block;
             }
+            .overlay {
+                z-index: 500;
+                background: #555;
+                opacity:0.4;
+                position: absolute;
+                top:0;
+                bottom:0;
+                left:0;
+                right: 0;
+                display: none;
+            }
+            
+            .card {
+                cursor: pointer;
+                
+                img {
+                    max-height: 250px;
+                }
+                
+                .card-name {
+                    position: relative;
+                    bottom: 47px;
+                    left: -50px;
+                    font: sans-serif
+                }
+                
+            }
+            
+            .card.unavailable {
+                cursor: default;
+                img {
+                    opacity: 0.2;
+                }
+            }
+            
+            .buttons-attach {
+                position: absolute;
+                bottom: 12px;
+                left: 12px;
+                
+                button {
+                    height: 40px;
+                    width: 65px;
+                }
+                
+            }
+            
         }
+        
+        
     }
 
     
     .game-stats {
-        min-height: 50px;
+        min-height: 200px;
+        min-width: 300px;
         position: absolute;
         bottom: 0;
         left: 0;
         border: 2px dotted #ccc;
         
+        font-size: 17px;
+        
+        .text-section {
+            padding: 1px 2px 1px 3px;
+            margin: 0;
+        }
+        
         .user-list {
-            height: 150px;
+            height: 200px;
             width: 100%;
         }
+        
         
     }
     
@@ -129,5 +208,39 @@ body {
         width: 800px;
         background-color:#dddddd;
         overflow-y: auto;
+        
+        p {
+            margin: 0;
+            padding-bottom: 5px;
+            padding-top: 3px;
+            border-bottom: 1px solid #cccccc;
+        }
+        
     }
+    
+    .chat-input {
+        display: block;
+        bottom: 0;
+        width: 100%;
+        
+        input {
+            flex-grow: 1;
+            height: 25px;
+        }
+        
+        button {
+            height: 32px;
+            margin-top: -1px;
+            width: 80px;
+        }
+        
+        p {
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            display: flex;
+        }
+        
+    }
+    
 }

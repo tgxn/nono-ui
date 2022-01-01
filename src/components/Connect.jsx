@@ -1,17 +1,9 @@
 import React from 'react';
-import gameConnection from '../interface/connection.js';
+import { connect } from "react-redux";
 
-export default class MainGame extends React.Component {
+import { setNickname, tryConnect, } from "../reducers/ircReducer";
 
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            nickname: "nono_bot_" + Math.floor((Math.random() * 1000) + 1).toString(),
-        };
-
-    }
-
+class Connect extends React.Component {
     render() {
         return (
             <div id="connect">
@@ -21,14 +13,11 @@ export default class MainGame extends React.Component {
                     <div className="connection-info">
                         <div>Nickname:</div>
                         <p>
-                            <input
-                                type="text"
-                                name="nickname"
-                                id="nickname"
-                                value={this.state.nickname}
-                                onChange={event => this.setState({ nickname: event.target.value, })} />
+                            <input type="text"
+                                value={this.props.nickName}
+                                onChange={event => this.props.setNickname(event.target.value)} />
                             <button
-                                onClick={() => gameConnection.connectWebSocket(this.state.nickname)} >
+                                onClick={() => this.props.tryConnect()} >
                                 Connect!
                         </button>
                         </p>
@@ -37,5 +26,22 @@ export default class MainGame extends React.Component {
             </div>
         );
     }
-
 }
+
+const mapStateToProps = (state) => {
+    return {
+        nickName: state.ircReducer.nickName,
+    }
+};
+
+const mapDispatchToProps = (dispatch) => {
+    return {
+        setNickname: (newNickname) => dispatch(setNickname(newNickname)),
+        tryConnect: () => dispatch(tryConnect()),
+    }
+}
+
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(Connect);

@@ -1,159 +1,16 @@
 import React from 'react';
+import { connect } from "react-redux";
+
 import gameConnection from '../interface/connection.js';
 
+import {
+    playerTurn,
+} from "../reducers/gameReducer";
 
 import GameStatus from "./GameStatus.jsx"
-
-import { stripColorsAndStyle } from "irc-colors";
-
-export default class MainGame extends React.Component {
-
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            status: "stopped",
-            turn: false,
-            players: [],
-            hand: [],
-            top: false,
-        };
-
-        /**
-         * GameListener 
-         * 
-         * Recieves events for:
-         * - notice (unobot)
-         * - privmsg (unobot)
-         */
-        gameConnection.setListener("game", ({ type, parsedMessage, }) => {
-            console.log("got gameMessage", type, parsedMessage);
-
-            if (type == "notice") {
-
-                console.warn("NOTICE", parsedMessage);
-                const msg = parsedMessage.params[1];
-
-                if (msg == "No game in progress.") {
-                    console.log("no game in progress", parsedMessage);
-                    this.setState({
-                        status: "stopped",
-                    });
-                }
-
-                // hand notice "Hand: \u000300,04r9\u000f \u000300,01wd4\u000f \u000300,03gs\u000f \u000300,01w\u000f \u000300,03g5\u000f \u000300,03g7\u000f \u000300,12bd2\u000f "
-                if (msg.startsWith("Hand: ")) {
-
-                    // stript crap, extrat cards
-                    const handFull = msg.substr(6).trim();
-                    const handFlat = stripColorsAndStyle(handFull);
-
-                    console.warn("hand", handFlat);
-                    const cardsArray = handFlat.split(" ");
-
-                    this.setState({
-                        ...this.state,
-                        hand: cardsArray,
-                    });
-
-                }
-
-            }
-
-            if (type == "botmsg") {
-
-                console.warn("BOT_MSG", parsedMessage);
-                const msg = parsedMessage.params[1];
-
-                //////////////// GAME STATE
-
-                if (msg.indexOf(" stopped the current game.") !== -1) {
-
-                    console.log("game started", parsedMessage);
-                    this.setState({
-                        status: "stopped",
-                    });
-                }
-
-                if (msg == "A game of Uno has started. Players can now \"join\".") {
-                    console.log("game started", parsedMessage);
-                    this.setState({
-                        status: "lobby",
-                    });
-                }
-
-                if (msg.indexOf(" has won the game!") !== -1) {
-                    console.log("game FINISHED", parsedMessage);
-                    this.setState({
-                        status: "stopped",
-                    });
-                }
-
-                if (msg.indexOf(" has joined the game!") !== -1) {
-                    console.log("player joined", parsedMessage);
-                    const joiningPlayer = msg.replace(" has joined the game!", "");
-                    this.setState({
-                        players: {
-                            ...this.state.players,
-                            [joiningPlayer]: parsedMessage.prefix,
-                        },
-                    });
-                }
-
-                //////////////// TOP CARD
-
-                let topCard = false;
-
-                // someone playes "gamerx played \u000300,04r8\u000f."
-                if (msg.indexOf(" played ") !== -1) {
-                    let cleanInput = msg.split(" played ")[1];
-                    cleanInput = cleanInput.substring(0, cleanInput.length - 1)
-                    topCard = stripColorsAndStyle(cleanInput);
-                }
-
-                // game start "Game Started, Top Card is \u000300,12b0\u000f"
-                if (
-                    msg.startsWith("Game Started, Top Card is ")
-                ) {
-                    const cleanInput = msg.replace("Game Started, Top Card is ", "").trim();
-                    topCard = stripColorsAndStyle(cleanInput);
-                    this.setState({
-                        status: "started",
-                    });
-                }
-
-                if (topCard) {
-                    console.warn("top", topCard);
-                    this.setState({
-                        ...this.state,
-                        top: topCard,
-                    });
-                }
-
-                //////////////// TURN
-
-                let whosTurn = false;
-
-                if (msg.indexOf("'s turn!") !== -1) {
-                    whosTurn = msg.replace("'s turn!", "");
-                    whosTurn = whosTurn.replace("It's currently ", "");
-                }
-
-                if (whosTurn) {
-                    console.warn("whosTurn", whosTurn);
-                    this.setState({
-                        ...this.state,
-                        turn: whosTurn,
-                    });
-                }
-            }
-
-        });
-
-    }
+class MainGame extends React.Component {
 
     playCard(cardId) {
-
         let cardCommand = "p " + cardId;
 
         // select w color
@@ -162,56 +19,135 @@ export default class MainGame extends React.Component {
             if (selectedColor != null) {
                 cardCommand += " " + selectedColor;
                 gameConnection.sendChannel(cardCommand);
+                this.props.playerTurn(false);
             }
         }
 
         else {
             gameConnection.sendChannel(cardCommand);
+            this.props.playerTurn(false);
         }
-
-    }
-
-    sendString(stringToSend) {
-        console.log("sendString", stringToSend);
-
-        gameConnection.sendChannel(stringToSend);
     }
 
     render() {
 
-        let topPath = <img src={`cards/${this.state.top}.png`} />;
-
         // just color code
-        if (this.state.top.length == 1) {
-            topPath = this.state.top;
+        let topPath = false;
+        if (this.props.top.length > 1) {
+            topPath = <img src={`cards/${this.props.top}.png`} />;
+        }
+
+        const userNick = gameConnection.getNickname();
+        const turn = this.props.turn;
+
+        let appendColor = "";
+        if (this.props.turn == gameConnection.getNickname()) {
+            console.log(userNick, turn);
+            appendColor = " yourturn"
         }
 
         return (
             <div id="maingame">
-                Top Card<br />
                 <div className="top">
-                    {this.state.top && <div>
-                        {topPath}
-                    </div>}
-
+                    Top Card<br />
+                    <div className="card-container">
+                        {topPath && topPath}
+                        {this.props.top && this.props.top.toUpperCase()}
+                        {!this.props.top && "NOTHING!"}
+                    </div>
                 </div>
-                <br /><br />
-                Your Hand<br />
                 <div className="hand">
-                    {this.state.hand.map(card => {
-                        return <div className="card" onClick={() => this.playCard(card)}>
-                            <img src={`cards/${card}.png`} />
-                        </div>;
-                    })}
+                    Your Hand<br />
+                    <div className="card-container">
+                        <div className={this.props.turn == gameConnection.getNickname() ? "overlay" : "overlay on"}></div>
+                        {this.props.hand.map(card => {
+                            let playableCard = false;
+
+                            // colored card
+                            if (
+                                this.props.top && (
+                                    this.props.top.indexOf("b") == 0 ||
+                                    this.props.top.indexOf("g") == 0 ||
+                                    this.props.top.indexOf("r") == 0 ||
+                                    this.props.top.indexOf("y") == 0
+                                )
+                            ) {
+                                // matching color
+                                if (this.props.top.substr(0, 1) == card.substr(0, 1)) {
+                                    playableCard = true;
+                                }
+
+                                // same card class
+                                if (this.props.top.substr(1, 3) == card.substr(1, 3)) {
+                                    playableCard = true;
+                                }
+                            }
+
+                            if (card.indexOf("w") == 0) {
+                                playableCard = true;
+                            }
+
+                            if (this.props.top && this.props.top.indexOf("w") == 0) {
+                                playableCard = true;
+                            }
+
+                            let cardClasses = "card";
+                            if (!playableCard) {
+                                cardClasses += " unavailable";
+
+                            }
+
+                            return <div className={cardClasses} onClick={() => this.playCard(card)}>
+                                <img tooltip={card.toUpperCase()} src={`cards/${card}.png`} />
+                                <div className="card-name">{card.toUpperCase()}</div>
+                            </div>;
+                        })}
+                        <div className="buttons-attach">
+                            <button
+                                disabled={!this.props.inChannel || this.props.nickName !== this.props.turn}
+                                onClick={() => gameConnection.sendChannel("draw")} >
+                                DRAW
+                            </button>
+                            <button
+                                disabled={!this.props.inChannel || this.props.nickName !== this.props.turn}
+                                onClick={() => gameConnection.sendChannel("pass")} >
+                                PASS
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 <GameStatus
-                    sendString={this.sendString}
-                    players={this.state.players}
-                    status={this.state.status}
-                    turn={this.state.turn} />
+                    players={this.props.players}
+                    status={this.props.status}
+                    turn={this.props.turn} />
             </div>
         );
     }
 
 }
+
+const mapStateToProps = (state) => {
+    return {
+        inChannel: state.ircReducer.inChannel,
+        nickName: state.ircReducer.nickName,
+
+        status: state.gameReducer.status,
+        owner: state.gameReducer.owner,
+        turn: state.gameReducer.turn,
+        players: state.gameReducer.players,
+        hand: state.gameReducer.hand,
+        top: state.gameReducer.top,
+    }
+};
+
+const mapDispatchToProps = (dispatch) => {
+    return {
+        playerTurn: playerName => dispatch(playerTurn(playerName))
+    }
+}
+
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps,
+)(MainGame);

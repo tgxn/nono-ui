@@ -1,14 +1,9 @@
 import React from 'react';
+import { connect } from "react-redux";
+
 import gameConnection from '../interface/connection.js';
 
-import { stripColorsAndStyle } from "irc-colors";
-
-export default class GameStatus extends React.Component {
-    constructor(props) {
-        super(props);
-
-    }
-
+class GameStatus extends React.Component {
     render() {
 
         const userNick = gameConnection.getNickname();
@@ -20,20 +15,33 @@ export default class GameStatus extends React.Component {
             appendColor = " yourturn"
         }
 
+        let stateNames = [
+            "Stopped",
+            "Lobby",
+            "Started"
+        ];
+
         return (
             <div className={"game-stats" + appendColor} >
-                <input type="submit" name="submit" id="submit" value="DRAW" onClick={() => this.props.sendString("draw")} />
-                <input type="submit" name="submit" id="submit" value="PASS" onClick={() => this.props.sendString("pass")} />
-                <input type="submit" name="submit" id="submit" value="CHECK" onClick={() => this.props.sendString("turn")} />
+
+                <input type="submit" name="submit" id="submit" value="CHECK TURN" onClick={() => gameConnection.sendChannel("turn")} />
                 <br />
-                Whos Turn: {this.props.turn}<br />
-                Game State: {this.props.status}<br />
+                <p className="text-section">
+                    Game State: {stateNames[this.props.status]}<br />
+                    {this.props.turn && `Whos Turn: ${this.props.turn}`}<br />
+                    <br />
+                    Player List:<br />
+                </p>
                 <select className="user-list" multiple>
                     {this.props.players && Object.keys(this.props.players)
                         .map(nick => {
-                            const playerData = this.props.players[nick]
+                            const playerData = this.props.players[nick];
 
-                            return (<option value={nick}>{nick}</option>);
+                            if (nick == userNick) {
+                                return (<option value={nick} key={nick}>&middot; {nick} (You!) - {playerData} cards!</option>);
+                            }
+
+                            return (<option value={nick} key={nick}>&middot; {nick} - {playerData} cards!</option>);
                         })}
                 </select>
             </div>
@@ -41,3 +49,18 @@ export default class GameStatus extends React.Component {
     }
 
 }
+
+const mapStateToProps = (state) => {
+    return {
+        status: state.gameReducer.status,
+        owner: state.gameReducer.owner,
+        turn: state.gameReducer.turn,
+        players: state.gameReducer.players,
+        hand: state.gameReducer.hand,
+        top: state.gameReducer.top,
+    }
+};
+
+export default connect(
+    mapStateToProps,
+)(GameStatus);
